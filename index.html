@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validating the Bible: The Torah & Beyond</title>
+    <style>
+        /* --- Font Import --- */
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400&display=swap');
+
+        /* --- CSS Variables for Theming --- */
+        :root {
+            --primary-color: #1a2d40; /* Deep, scholarly blue */
+            --secondary-color: #bfa880; /* Elegant gold for accents */
+            --text-color: #e0e0e0;      /* Soft, light gray for readability */
+            --bg-color: #0f1a26;        /* Darker blue for the background */
+            --card-bg: #1f354d;         /* Background for cards and accordions */
+            --quote-bg: rgba(0,0,0,0.2); /* Background for quotes */
+        }
+
+        /* --- General Body and Layout Styling --- */
+        body {
+            margin: 0;
+            font-family: 'Lato', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+
+        /* --- Animated Canvas Background --- */
+        #canvas-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Place canvas behind all content */
+        }
+
+        /* --- Main Content Container --- */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* --- Header Section --- */
+        .header {
+            text-align: center;
+            padding: 4rem 1rem 6rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 1px;
+            color: var(--secondary-color);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            font-weight: 300;
+            max-width: 700px;
+            margin: 1rem auto 0;
+            color: var(--text-color);
+        }
+
+        .header .explanation {
+            font-size: 1rem;
+            font-style: italic;
+            max-width: 600px;
+            border-top: 1px solid rgba(191, 168, 128, 0.3);
+            padding-top: 1rem;
+            margin-top: 2rem;
+        }
+        
+        /* --- Accordion Styling --- */
+        .accordion-item {
+            background-color: var(--card-bg);
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(191, 168, 128, 0.2);
+        }
+
+        .accordion-header {
+            background-color: transparent;
+            color: white;
+            cursor: pointer;
+            padding: 1.5rem;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1.5rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .accordion-header:hover {
+            background-color: rgba(191, 168, 128, 0.1);
+        }
+
+        .accordion-header .icon {
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-header.active .icon {
+            transform: rotate(45deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+            padding: 0 1.5rem;
+        }
+        
+        .accordion-content .content-inner {
+            padding-bottom: 1.5rem;
+        }
+        
+        .gemini-buttons {
+            padding-top: 1rem;
+            margin-top: 1.5rem;
+            border-top: 1px solid rgba(191, 168, 128, 0.2);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .gemini-btn {
+            background-color: transparent;
+            border: 1px solid var(--secondary-color);
+            color: var(--secondary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .gemini-btn:hover {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+
+        .accordion-content p {
+            margin-top: 0;
+            font-size: 1rem;
+            font-weight: 300;
+        }
+
+        .accordion-content strong, .accordion-content h4 {
+            font-weight: 400;
+            color: var(--secondary-color);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .quote {
+            background-color: var(--quote-bg);
+            border-left: 3px solid var(--secondary-color);
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+            font-style: italic;
+        }
+        .quote cite {
+            display: block;
+            text-align: right;
+            font-style: normal;
+            margin-top: 0.5rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+        
+        /* --- Conclusion Section Styling --- */
+        .conclusion {
+            margin-top: 3rem;
+            padding: 2rem;
+            background-color: var(--card-bg);
+            border-left: 4px solid var(--secondary-color);
+            border-radius: 4px;
+        }
+
+        .conclusion h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            margin-top: 0;
+            color: var(--secondary-color);
+        }
+        
+        /* --- Modal Styling --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid var(--secondary-color);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        #gemini-response h3 {
+             font-family: 'Cormorant Garamond', serif;
+             color: var(--secondary-color);
+             margin-top: 0;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--text-color);
+            border-bottom-color: var(--secondary-color);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+            margin: 2rem auto;
+            display: none; /* Hidden by default */
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            .header p {
+                font-size: 1rem;
+            }
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas-bg"></canvas>
+
+    <div class="container">
+        <header class="header">
+            <h1>Validating the Bible: The Torah & Beyond</h1>
+            <p>Exploring the historical and archaeological echoes that align with the biblical narratives.</p>
+            <p class="explanation">This page focuses on the **Torah** (the first five books of the Bible) and also explores key validations from the wider **Old Testament** (the books of the Prophets and Writings).</p>
+        </header>
+
+        <main class="main-content">
+            
+            <div class="accordion">
+
+                <!-- Genesis Section -->
+                <div class="accordion-item">
+                    <button class="accordion-header">
+                        <span>Book of Genesis</span>
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="content-inner">
+                            <p>The foundational stories of Genesis find powerful echoes in the literature and legal customs of ancient Mesopotamia, suggesting a shared cultural landscape.</p>
+                            
+                            <h4>Epic of Gilgamesh & The Flood</h4>
+                            <p>This Babylonian epic contains a Great Flood story with a hero, Utnapishtim, who is warned by a god to build a massive boat to save himself, his family, and "the seed of all living things" from a flood sent by angry gods.</p>
+                            <div class="quote">
+                                <p>"Demolish the house, build a boat! Abandon wealth, seek living beings! Spurn possessions, save living beings! Make all living beings go up into the boat."</p>
+                                <cite>Epic of Gilgamesh, Tablet XI</cite>
+                            </div>
+                            <div class="quote">
+                                <p>"Make yourself an ark of gopher wood... I will bring a flood of waters upon the earth to destroy all flesh in which is the breath of life under heaven... But I will establish my covenant with you, and you shall come into the ark, you, your sons, your wife, and your sons' wives with you."</p>
+                                <cite>Genesis 6:14, 17-18</cite>
+                            </div>
+
+                            <h4>Enuma Elish & Creation</h4>
+                            <p>The Babylonian creation epic describes the world being formed from a watery chaos. The god Marduk creates the heavens and the earth, sets the constellations in place, and creates humanity from clay, which has structural parallels to the creation account in Genesis 1.</p>
+                             <div class="quote">
+                                <p>"He split her (Tiamat, the chaos monster) into two parts, like a shellfish; half of her he set up and ceiled it as sky... He constructed stations for the great gods, fixing their astral likenesses as constellations."</p>
+                                <cite>Enuma Elish, Tablet IV</cite>
+                            </div>
+                             <div class="quote">
+                                <p>"And God said, 'Let there be an expanse in the midst of the waters, and let it separate the waters from the waters.' And God made the expanse... And God said, 'Let there be lights in the expanse of the heavens to separate the day from the night.'"</p>
+                                <cite>Genesis 1:6-7, 14</cite>
+                            </div>
+
+                            <div class="gemini-buttons">
+                                <button class="gemini-btn" data-action="summarize">✨ Summarize Parallels</button>
+                                <button class="gemini-btn" data-action="ask">✨ Ask a Deeper Question</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exodus Section -->
+                <div class="accordion-item">
+                    <button class="accordion-header">
+                        <span>Book of Exodus</span>
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="content-inner">
+                            <p>Archaeological and textual evidence from the ancient Near East shows remarkable parallels to the events, figures, and social conditions described in Exodus.</p>
+                            
+                            <h4>The Merneptah Stele</h4>
+                            <p>Dated to c. 1208 BCE, this Egyptian monument contains the earliest known extrabiblical reference to "Israel," boasting that the Pharaoh has conquered them in Canaan. This confirms Israel's presence in the land at a time consistent with the post-Exodus period.</p>
+                            <div class="quote">
+                                <p>"The princes are prostrate, saying 'Mercy!'... Ashkelon has been overcome... Israel is laid waste, its seed is no more."</p>
+                                <cite>Merneptah Stele</cite>
+                            </div>
+
+                            <h4>Ipuwer Papyrus & The Plagues</h4>
+                            <p>This ancient Egyptian text describes a time of national calamity, social chaos, and natural disasters that strikingly mirror the biblical plagues.</p>
+                             <div class="quote">
+                                <p>"Lo, the river is blood... Lo, gates, columns and walls are consumed by fire... Forsooth, the land is not light..."</p>
+                                <cite>Ipuwer Papyrus</cite>
+                            </div>
+                             <div class="quote">
+                                <p>"...all the water in the Nile turned into blood." (Exodus 7:20) "...and there was thick darkness in all the land of Egypt for three days." (Exodus 10:22)</p>
+                                <cite>Book of Exodus</cite>
+                            </div>
+                            
+                             <div class="gemini-buttons">
+                                <button class="gemini-btn" data-action="summarize">✨ Summarize Parallels</button>
+                                <button class="gemini-btn" data-action="ask">✨ Ask a Deeper Question</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leviticus Section -->
+                <div class="accordion-item">
+                    <button class="accordion-header">
+                        <span>Book of Leviticus</span>
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="content-inner">
+                            <p>The intricate system of laws and rituals in Leviticus is not an isolated invention but reflects a shared legal and religious vocabulary across the ancient Near East.</p>
+                            
+                            <h4>Hittite & Mesopotamian Law Codes</h4>
+                            <p>Ancient legal texts contain parallels to Levitical laws concerning purity, sexual prohibitions, and sacrificial regulations. For example, laws of restitution show a similar legal mindset.</p>
+                             <div class="quote">
+                                <p>"If a man has stolen an ox... if he has no money to pay, he shall be put to death."</p>
+                                <cite>Code of Hammurabi, Law 8</cite>
+                            </div>
+                             <div class="quote">
+                                <p>"If anyone sins and is unfaithful to the Lord by deceiving a neighbor about something entrusted to them or left in their care or about something stolen... they must make restitution in full, add a fifth of the value to it and give it all to the owner."</p>
+                                <cite>Leviticus 6:2-5</cite>
+                            </div>
+                            
+                            <h4>Ugaritic Ritual Texts</h4>
+                            <p>Clay tablets from ancient Ugarit describe sacrificial systems with terminology and practices similar to those in Leviticus, such as the "shelamim" (šlm) or peace/well-being offering, showing a shared cultural context for ritual worship.</p>
+
+                             <div class="gemini-buttons">
+                                <button class="gemini-btn" data-action="summarize">✨ Summarize Parallels</button>
+                                <button class="gemini-btn" data-action="ask">✨ Ask a Deeper Question</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Numbers Section -->
+                <div class="accordion-item">
+                    <button class="accordion-header">
+                        <span>Book of Numbers</span>
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="content-inner">
+                            <p>Key narratives and figures within the Book of Numbers find extrabiblical support, validating their place in the historical memory of the region.</p>
+
+                            <h4>Deir 'Alla Inscription (Balaam Text)</h4>
+                            <p>A non-Israelite text discovered in Jordan (c. 840–760 BCE) explicitly names "Balaam, son of Beor"—the same prophet from Numbers 22–24. It describes him as a "seer of the gods" who receives a divine warning in a night vision.</p>
+                             <div class="quote">
+                                <p>"The sayings of Balaam, son of Beor, the man who was a seer of the gods. Lo, the gods came to him in the night... and they said to Balaam... 'A goddess will sew up the heavens with a thick cloud...'"</p>
+                                <cite>Deir 'Alla Inscription (paraphrased)</cite>
+                            </div>
+                             <div class="quote">
+                                <p>"That night God came to Balaam and said, 'Since these men have come to summon you, go with them, but do only what I tell you.'"</p>
+                                <cite>Numbers 22:20</cite>
+                            </div>
+                            
+                             <div class="gemini-buttons">
+                                <button class="gemini-btn" data-action="summarize">✨ Summarize Parallels</button>
+                                <button class="gemini-btn" data-action="ask">✨ Ask a Deeper Question</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deuteronomy Section -->
+                <div class="accordion-item">
+                    <button class="accordion-header">
+                        <span>Book of Deuteronomy</span>
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="content-inner">
+                            <p>The structure of Deuteronomy is a powerful piece of evidence, as it closely mirrors the format of international political treaties from the Late Bronze Age, the very era of Moses.</p>
+                            
+                            <h4>Hittite Suzerainty Treaties</h4>
+                            <p>Deuteronomy's structure is a near-perfect match for Hittite vassal treaties (c. 14th-13th century BCE). This suggests the author used a familiar, official format to frame Israel's covenant with God. The structure includes:</p>
+                            <ul>
+                                <li><strong>Preamble:</strong> Identifying the speaker (Deut. 1:1-5)</li>
+                                <li><strong>Historical Prologue:</strong> Recounting past deeds (Deut. 1:6-4:49)</li>
+                                <li><strong>Stipulations:</strong> The laws of the covenant (Deut. 5-26)</li>
+                                <li><strong>Blessings and Curses:</strong> Consequences for obedience/disobedience (Deut. 27-28)</li>
+                                <li><strong>Witnesses:</strong> Heaven and Earth are called as witnesses (Deut. 30:19)</li>
+                            </ul>
+                            
+                             <div class="gemini-buttons">
+                                <button class="gemini-btn" data-action="summarize">✨ Summarize Parallels</button>
+                                <button class="gemini-btn" data-action="ask">✨ Ask a Deeper Question</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prophets and Writings Section -->
+                <div class="accordion-item">
+                    <button class="accordion-header">
+                        <span>Validations from the Prophets & Writings</span>
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="content-inner">
+                            <p>Beyond the Torah, historical and archaeological evidence aligns with accounts in the later books of the Old Testament.</p>
+                            
+                            <h4>Sennacherib's Prism & Isaiah's Prophecy</h4>
+                            <p>Assyrian king Sennacherib's own records describe his invasion of Judah (c. 701 BCE). He boasts of conquering 46 cities but notably does not claim to have captured Jerusalem, instead saying he shut up King Hezekiah "like a caged bird." This aligns perfectly with the biblical account in Isaiah 36-37, where Jerusalem is miraculously saved.</p>
+                            <div class="quote">
+                                <p>"As for Hezekiah the Judahite, who did not submit to my yoke... himself I shut up in Jerusalem, his royal city, like a bird in a cage."</p>
+                                <cite>Sennacherib's Prism</cite>
+                            </div>
+
+                            <h4>The Cyrus Cylinder & The Return from Exile</h4>
+                            <p>This ancient clay cylinder from the Persian king Cyrus the Great (c. 539 BCE) describes his policy of allowing conquered peoples to return to their homelands and restore their temples. This provides a powerful backdrop to the events of Ezra 1 and the fulfillment of prophecies in Isaiah 44-45.</p>
+                             <div class="quote">
+                                <p>"I returned to these sacred cities... the images which had been in them and I established for them permanent sanctuaries. I also gathered all their former inhabitants and returned to them their habitations."</p>
+                                <cite>The Cyrus Cylinder</cite>
+                            </div>
+                             <div class="quote">
+                                <p>"Thus says Cyrus king of Persia: The LORD, the God of heaven... has charged me to build him a house at Jerusalem... Whoever is among you of all his people, may his God be with him, and let him go up to Jerusalem..."</p>
+                                <cite>Ezra 1:2-3</cite>
+                            </div>
+                            
+                            <h4>Seal of Jeremiah's Scribe</h4>
+                            <p>A clay seal impression (bulla) was discovered bearing the name "Berekhyahu, son of Neriyahu, the Scribe." This is the full name of Baruch, son of Neriah, who was the personal scribe and close companion of the prophet Jeremiah (Jeremiah 36:4). This artifact provides a direct link to a figure in the biblical narrative.</p>
+
+                            <div class="gemini-buttons">
+                                <button class="gemini-btn" data-action="summarize">✨ Summarize Validations</button>
+                                <button class="gemini-btn" data-action="ask">✨ Ask a Deeper Question</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Archaeological Discoveries Section -->
+                 <div class="accordion-item">
+                    <button class="accordion-header">
+                        <span>Key Archaeological Discoveries</span>
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="content-inner">
+                            <p>Beyond literary parallels, direct archaeological finds have provided tangible connections to the people, places, and events of the Bible.</p>
+                            
+                            <h4>Old Testament Discoveries</h4>
+                            <p><strong>Tel Dan Stele:</strong> Discovered in 1993, this 9th-century BCE stone fragment contains an inscription from an Aramean king boasting of his victory over the "king of Israel" and the "king of the House of David." This was the first extrabiblical text to mention the Davidic dynasty, providing strong evidence for King David's historicity.</p>
+                            <p><strong>Hezekiah's Tunnel & Siloam Inscription:</strong> This 1,750-foot tunnel was dug beneath Jerusalem to secure the city's water supply, exactly as described in 2 Kings 20 and 2 Chronicles 32. An inscription found inside describes the moment the two teams of diggers, working from opposite ends, met in the middle.</p>
+                            <p><strong>Dead Sea Scrolls:</strong> This vast collection of manuscripts, discovered from 1947 onwards, contains copies of every book in the Old Testament (except Esther). Dating to before the time of Jesus, they demonstrate the remarkable accuracy with which the biblical text was preserved over centuries.</p>
+
+                            <h4>New Testament Discoveries</h4>
+                            <p><strong>The Pilate Stone:</strong> Found in Caesarea in 1961, this limestone block is inscribed with the name "Pontius Pilate, Prefect of Judea." It is a direct archaeological confirmation of the existence and title of the Roman governor who, according to the Gospels, presided over the trial of Jesus.</p>
+                            <p><strong>House of Peter in Capernaum:</strong> Excavations in Capernaum, on the shore of the Sea of Galilee, uncovered a 1st-century house that was venerated as a public gathering place by early Christians. It was later enclosed within an octagonal church, a common practice for holy sites. This is widely held to be the home of the Apostle Peter mentioned in Matthew 8:14.</p>
+                             <p><strong>Pool of Siloam:</strong> In 2004, archaeologists uncovered a large, stone-stepped pool in Jerusalem that perfectly matches the description of the Pool of Siloam from John 9, where Jesus healed a blind man. Coins found in the plaster date it to the 1st century CE.</p>
+
+                             <div class="gemini-buttons">
+                                <button class="gemini-btn" data-action="summarize">✨ Summarize Discoveries</button>
+                                <button class="gemini-btn" data-action="ask">✨ Ask a Deeper Question</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Perspectives on Jesus Section -->
+                <div class="accordion-item">
+                    <button class="accordion-header">
+                        <span>Perspectives on Jesus Outside Christianity</span>
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="content-inner">
+                            <p>The historical impact of Jesus of Nazareth is so profound that he is a figure of great respect and admiration in major world religions and among influential thinkers, even by those who do not share Christian beliefs about his divinity.</p>
+                            
+                            <h4>Jesus in Islam ('Isa ibn Maryam)</h4>
+                            <p>In Islam, Jesus (known as 'Isa) is one of the most esteemed prophets of God. The Quran affirms his miraculous virgin birth, calls him the "Messiah" (al-Masih), and recounts his miracles, such as healing the sick and raising the dead, all by God's permission.</p>
+                            <div class="quote">
+                                <p>"[The angel said], 'O Mary, indeed Allah gives you good tidings of a word from Him, whose name will be the Messiah, Jesus, the son of Mary - distinguished in this world and the Hereafter...'"</p>
+                                <cite>Quran 3:45</cite>
+                            </div>
+                            <div class="quote">
+                                <p>"She said, 'My Lord, how will I have a child when no man has touched me?' [The angel] said, 'Such is Allah; He creates what He wills. When He decrees a matter, He only says to it, "Be," and it is.'"</p>
+                                <cite>Quran 3:47</cite>
+                            </div>
+
+                            <h4>Jesus in Buddhism</h4>
+                            <p>While Buddhism does not have a concept of a creator God, prominent figures like the 14th Dalai Lama have spoken of Jesus with deep reverence, often comparing his compassionate teachings to those of a Bodhisattva—an enlightened being dedicated to the welfare of all.</p>
+                             <div class="quote">
+                                <p>"I think of Jesus Christ as a fully enlightened being, a Bodhisattva of a very high spiritual realization."</p>
+                                <cite>The Dalai Lama</cite>
+                            </div>
+
+                            <h4>Jesus in the View of Other Thinkers</h4>
+                            <p>Many influential non-Christian figures have been deeply moved by Jesus's ethical teachings and life.</p>
+                            <div class="quote">
+                                <p>"I like your Christ, I do not like your Christians. Your Christians are so unlike your Christ... A man who was completely innocent, offered himself as a sacrifice for the good of others, including his enemies, and became the ransom of the world. It was a perfect act."</p>
+                                <cite>Mahatma Gandhi</cite>
+                            </div>
+                             <div class="quote">
+                                <p>"Unquestionably! No one can read the Gospels without feeling the actual presence of Jesus. His personality pulsates in every word. No myth is filled with such life."</p>
+                                <cite>Albert Einstein</cite>
+                            </div>
+                            
+                            <hr style="border-color: rgba(191, 168, 128, 0.2); margin: 2rem 0;">
+
+                            <h4>A Testimony to a Historical Figure</h4>
+                            <p>It is crucial to note that these perspectives, while deeply respectful, do not affirm the Christian belief in Jesus as the Son of God or part of the Trinity. However, the fact that the founders and revered leaders of other major world religions, as well as influential secular thinkers, hold Jesus in such high esteem is powerful testimony. It underscores his undeniable existence as a historical figure and highlights the universal appeal of his exceptional life and moral teachings, which are recognized across religious and cultural boundaries.</p>
+
+                            <div class="gemini-buttons">
+                                <button class="gemini-btn" data-action="summarize">✨ Summarize Perspectives</button>
+                                <button class="gemini-btn" data-action="ask">✨ Ask a Deeper Question</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="conclusion">
+                <h3>A Narrative Rooted in History</h3>
+                <p>These external validations do not "prove" the Bible in a scientific sense, but they powerfully demonstrate that its narratives are not a collection of myths created in a vacuum. Instead, they are deeply embedded in the historical, cultural, and literary world of the ancient Near East. The parallels in law, ritual, and historical memory show that the biblical authors were chronicling real events and traditions, using familiar forms to convey a unique theological message.</p>
+            </div>
+
+            <div class="conclusion" style="margin-top: 1.5rem; border-left-color: #80a0bf;">
+                <h3>A Note on Scholarly Interpretation</h3>
+                <p>It is important to note that scholars interpret these parallels in different ways. Some view them as direct confirmation of the biblical accounts. Others see them as evidence that the ancient Israelites were participating in a shared cultural heritage, adapting common stories, laws, and literary forms to express their own unique theology. Both perspectives acknowledge that the Bible is a document of its time, deeply engaged with the world around it.</p>
+            </div>
+
+        </main>
+
+        <footer>
+            <p>This interactive page synthesizes archaeological findings and textual analysis to explore the historical context of the Bible.</p>
+        </footer>
+    </div>
+    
+    <!-- Gemini Modal -->
+    <div class="modal-overlay" id="gemini-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close-btn">&times;</button>
+            <div class="loader" id="loader"></div>
+            <div id="gemini-response"></div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Accordion Functionality ---
+        const accordionItems = document.querySelectorAll('.accordion-item');
+
+        accordionItems.forEach(item => {
+            const header = item.querySelector('.accordion-header');
+            const content = item.querySelector('.accordion-content');
+
+            header.addEventListener('click', () => {
+                const isActive = header.classList.contains('active');
+                // Close all accordions
+                accordionItems.forEach(otherItem => {
+                    otherItem.querySelector('.accordion-content').style.maxHeight = null;
+                    otherItem.querySelector('.accordion-header').classList.remove('active');
+                });
+                // Toggle the clicked accordion
+                if (!isActive) {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    header.classList.add('active');
+                }
+            });
+        });
+
+        // --- Gemini API Functionality ---
+        const modal = document.getElementById('gemini-modal');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const geminiResponseEl = document.getElementById('gemini-response');
+        const loader = document.getElementById('loader');
+        
+        document.querySelectorAll('.gemini-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const action = e.target.dataset.action;
+                const contentEl = e.target.closest('.content-inner');
+                const contextText = contentEl.innerText.replace(/✨.*$/s, '').trim(); // Get text but remove button text
+                const bookTitle = contentEl.closest('.accordion-item').querySelector('span').innerText;
+
+                let prompt;
+
+                if (action === 'summarize') {
+                    prompt = `Please provide a concise, one-paragraph summary of the content under the heading "${bookTitle}" in the following text:\n\n---\n${contextText}\n---`;
+                } else if (action === 'ask') {
+                    const userQuestion = window.prompt(`What is your question about the ${bookTitle}?`);
+                    if (!userQuestion) return; // User cancelled prompt
+                    prompt = `In the context of "${bookTitle}", please answer the following question: "${userQuestion}". Use the following text from the webpage as context:\n\n---\n${contextText}\n---`;
+                }
+
+                if (prompt) {
+                    await callGemini(prompt);
+                }
+            });
+        });
+        
+        async function callGemini(prompt) {
+            geminiResponseEl.innerHTML = '';
+            loader.style.display = 'block';
+            modal.classList.add('visible');
+
+            const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // API key will be provided by the environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API call failed with status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+
+                let responseText = "Sorry, I couldn't get a response. Please try again.";
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    responseText = result.candidates[0].content.parts[0].text;
+                }
+                
+                // Simple markdown to HTML conversion
+                responseText = responseText
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')       // Italics
+                    .replace(/\n/g, '<br>');                    // Newlines
+
+                geminiResponseEl.innerHTML = `<h3>Gemini's Response</h3><p>${responseText}</p>`;
+
+            } catch (error) {
+                console.error("Gemini API call error:", error);
+                geminiResponseEl.innerHTML = `<h3>Error</h3><p>There was an issue contacting the Gemini API. Please check the console for details.</p>`;
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        modalCloseBtn.addEventListener('click', () => modal.classList.remove('visible'));
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('visible');
+            }
+        });
+
+
+        // --- Animated Canvas Background ---
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        let stars = [];
+        const starCount = 150;
+
+        function createStars() {
+            stars = [];
+            for (let i = 0; i < starCount; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    radius: Math.random() * 1.5 + 0.5,
+                    vx: Math.random() * 0.2 - 0.1,
+                    vy: Math.random() * 0.2 - 0.1,
+                    alpha: Math.random() * 0.5 + 0.5
+                });
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.beginPath();
+            for (let i = 0; i < stars.length; i++) {
+                const s = stars[i];
+                ctx.moveTo(s.x, s.y);
+                ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2, true);
+            }
+            ctx.fill();
+            
+            update();
+        }
+
+        function update() {
+            for (let i = 0; i < stars.length; i++) {
+                let s = stars[i];
+                s.x += s.vx;
+                s.y += s.vy;
+
+                if (s.x < 0 || s.x > width) s.vx = -s.vx;
+                if (s.y < 0 || s.y > height) s.vy = -s.vy;
+            }
+        }
+
+        function animate() {
+            draw();
+            requestAnimationFrame(animate);
+        }
+        
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            createStars(); // Re-initialize stars for new screen size
+        });
+
+        // Start the animation
+        createStars();
+        animate();
+    </script>
+
+</body>
+</html>
